@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Build React Applications</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-gray-300">
+    <section class="p-5 grid grid-cols-2 gap-5">
+        <div>
+            <label class="text-sm">Github Repo Author</label>
+            <input type="text" class="bg-gray-800 rounded-lg p-3 w-full" id="author" placeholder="jareer12">
+        </div>
+        <div>
+            <label class="text-sm">Github Repo Name</label>
+            <input type="text" class="bg-gray-800 rounded-lg p-3 w-full" id="repo_name" placeholder="react-project">
+        </div>
+        <div>
+            <label class="text-sm">Github Token(if repo is private)</label>
+            <input type="text" class="bg-gray-800 rounded-lg p-3 w-full" id="repo_name"
+                placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+        </div>
+        <a id="download" style="display: none;"
+            class="p-3 bg-blue-500 col-span-2 rounded-lg uppercase text-white font-bold">Click
+            To Download</a>
+        <button onclick="build()"
+            class="p-3 bg-blue-500 col-span-2 rounded-lg uppercase text-white font-bold">Build</button>
+    </section>
+</body>
+
+<script>
+    function build() {
+        fetch(`/upload`, {
+            method: "POST",
+            body: JSON.stringify({
+                github_repo: `${document.getElementById("author").innerHTML}/${document.getElementById("repo_name").innerHTML}`
+            }),
+            headers: {
+                "content-type": "application/json"
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("download").style.display = null;
+                document.getElementById("download").href = `./download?uuid=${data.Data.uuid}`
+            }).catch(err => {
+                console.log(err)
+            })
+    }
+</script>
+
+</html>

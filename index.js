@@ -9,9 +9,53 @@ const queue = [];
 app.use(body.urlencoded({ extended: false }));
 app.use(body.json());
 
+const isInQueue = (uuid) => {
+  for (let i = 0; i < queue.length; i++) {
+    const element = queue[i];
+    if (element.uuid === uuid) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const isInQueueByName = (github_repo) => {
+  for (let i = 0; i < queue.length; i++) {
+    const element = queue[i];
+    if (element.github_repo === github_repo) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const GetByName = (github_repo) => {
+  for (let i = 0; i < queue.length; i++) {
+    const element = queue[i];
+    if (element.github_repo === github_repo) {
+      return element;
+    }
+  }
+  return null;
+};
+
+app.get("*", function (req, res) {
+  res.end(fs.readFileSync(`${__dirname}/index.html`));
+});
+
 app.post("/upload", (req, res) => {
   const uuid = crypto.randomUUID();
   const { github_repo, github_token, discord_webhook } = req.body;
+
+  if (isInQueueByName(github_repo) === true) {
+    return res.json({
+      Message: "Your repo has been added to queue",
+      Data: {
+        uuid: GetByName(github_repo),
+      },
+    });
+  }
+
   queue.push({ github_repo, github_token, discord_webhook, uuid });
   return res.json({
     Message: "Your repo has been added to queue",
@@ -24,16 +68,6 @@ app.post("/upload", (req, res) => {
 app.get("/download", (req, res) => {
   const { uuid } = req.query;
   const path = `${__dirname}/builds/${uuid}.zip`;
-
-  const isInQueue = (uuid) => {
-    for (let i = 0; i < queue.length; i++) {
-      const element = queue[i];
-      if (element.uuid === uuid) {
-        return true;
-      }
-    }
-    return false;
-  };
 
   if (!uuid) {
     return res.json({
